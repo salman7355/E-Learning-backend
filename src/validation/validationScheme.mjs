@@ -1,4 +1,22 @@
 export const RegisterValidateScheme = {
+  profilePicture: {
+    notEmpty: {
+      errorMessage: "PP must not be empty",
+    },
+  },
+  role: {
+    notEmpty: {
+      errorMessage: "PP must not be empty",
+    },
+    isString: {
+      errorMessage: "Name must be a string",
+    },
+  },
+  balance: {
+    notEmpty: {
+      errorMessage: "PP must not be empty",
+    },
+  },
   name: {
     notEmpty: {
       errorMessage: "Name must not be empty",
@@ -44,6 +62,9 @@ export const RegisterValidateScheme = {
         max: 11,
       },
       errorMessage: "Invalid Mobile Number",
+    },
+    isString: {
+      errorMessage: "Mobile Number must be a string",
     },
   },
 };
