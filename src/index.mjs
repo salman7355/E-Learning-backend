@@ -527,4 +527,28 @@ app.delete("/api/deleteCourse/:id", async (request, response) => {
   }
 });
 
-// add course    ba5o delsoora felfront end a7otha fe firebase we a5od ellink wab3t b2a elrequest
+// add course
+app.post("/api/addCourse", async (request, response) => {
+  const { coursename, description, price, courseImage, category } =
+    request.body;
+
+  if (!coursename || !description || !price || !courseImage || !category) {
+    return response.status(400).json({ message: "Missing required fields" });
+  }
+
+  try {
+    const client = await pool.connect();
+    const result = await client.query(
+      "INSERT INTO courses (coursename, description, price, imagepath, category) VALUES ($1, $2, $3, $4, $5) RETURNING *",
+      [coursename, description, price, courseImage, category]
+    );
+    client.release();
+
+    return response
+      .status(201)
+      .send({ message: "Course added successfully", course: result.rows[0] });
+  } catch (error) {
+    console.error("Error adding course:", error);
+    return response.status(500).send({ message: "Internal server error" });
+  }
+});
