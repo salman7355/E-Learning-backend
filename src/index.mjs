@@ -4,8 +4,6 @@ import cors from "cors";
 import routes from "./routes/index.mjs";
 import { courses } from "./constants/courses.mjs";
 import { pool } from "./Services/database.mjs";
-import bodyParser from "body-parser";
-import fs from "fs";
 
 const app = express();
 
@@ -223,6 +221,51 @@ app.post("/course/add", async (request, response) => {
       client.release();
       return response.status(400).send({ message: "Record already exists" });
     }
+
+    // Get the course price
+    const coursePriceResult = await client.query(
+      "SELECT price FROM courses WHERE id = $1",
+      [courseId]
+    );
+
+    if (coursePriceResult.rows.length === 0) {
+      client.release();
+      return response.status(400).send({ message: "Course not found" });
+    }
+
+    const coursePrice = coursePriceResult.rows[0].price;
+
+    // Get the user balance
+    const userBalanceResult = await client.query(
+      "SELECT balance FROM users WHERE id = $1",
+      [userId]
+    );
+
+    if (userBalanceResult.rows.length === 0) {
+      client.release();
+      return response.status(400).send({ message: "User not found" });
+    }
+
+    const userBalance = userBalanceResult.rows[0].balance;
+
+    // console.log(Number(userBalance) < Number(coursePrice));
+
+    if (Number(userBalance) < Number(coursePrice)) {
+      client.release();
+      return response.status(400).send({ message: "Insufficient balance" });
+    }
+
+    const newBalance = Number(userBalance) - Number(coursePrice);
+
+    if (Number(newBalance) < 0) {
+      client.release();
+      return response.status(400).send({ message: "Insufficient balance" });
+    }
+
+    await client.query("UPDATE users SET balance = $1 WHERE id = $2", [
+      newBalance,
+      userId,
+    ]);
 
     // Record does not exist, insert new record
     await client.query(
@@ -483,7 +526,7 @@ app.put("/api/editCourse/:id", async (request, response) => {
   try {
     const client = await pool.connect();
     const result = await client.query(
-      "UPDATE courses SET name = $1, description = $2, price = $3, imagePath = $4 WHERE id = $5 RETURNING *",
+      "UPDATE courses SET coursename = $1, description = $2, price = $3, imagepath = $4 WHERE id = $5 RETURNING *",
       [name, description, price, imagepath, id]
     );
     client.release();
