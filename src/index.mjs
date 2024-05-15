@@ -1,4 +1,4 @@
-import express, { response } from "express";
+import express from "express";
 import { users } from "./constants/users.mjs";
 import cors from "cors";
 import routes from "./routes/index.mjs";
@@ -32,14 +32,6 @@ app.get("/api/courses", async (request, response) => {
     const result = await client.query("SELECT * FROM courses");
     client.release();
     const courses = result.rows;
-
-    // courses.forEach((course) => {
-    //   // console.log(course);
-    //   const imagePath = course["imagepath"];
-    //   // console.log(imagePath);
-    //   const base64 = fs.readFileSync(imagePath, { encoding: "base64" });
-    //   course.imagepath = base64;
-    // });
 
     if (category) {
       return response.send(
@@ -389,17 +381,6 @@ app.get("/api/user/:id", async (request, response) => {
     if (!user) {
       return response.status(404).send({ message: "User not found" });
     }
-    // console.log(user);
-
-    // if (!user.imagepath) {
-    //   return response.status(400).send({ message: "User image not found" });
-    // }
-
-    // const imagePath = user.imagepath;
-    // const base64 = fs.readFileSync(imagePath, { encoding: "base64" });
-
-    // // Update the user object with the base64-encoded image
-    // user.imagepath = base64;
 
     return response.status(201).send(user);
   } catch (error) {
@@ -497,6 +478,8 @@ app.delete("/api/delete/:id", async (request, response) => {
     return response.status(500).send({ message: "Error deleting user" });
   }
 });
+
+// inc balance
 
 // admin functions
 
