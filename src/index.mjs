@@ -7,11 +7,7 @@ import { pool } from "./Services/database.mjs";
 
 const app = express();
 
-app.use(
-  cors({
-    origin: "exp://192.168.1.10:8081",
-  })
-);
+app.use(cors());
 
 app.use(express.json());
 
@@ -98,6 +94,8 @@ app.get("/api/courses/:id", async (request, response) => {
 app.get("/", (request, response) => {
   return response.sendStatus(200);
 });
+
+// philo
 
 app.post("/cart/add", async (request, response) => {
   const {
@@ -189,6 +187,8 @@ app.delete("/cart/delete/:userId/:courseId", async (request, response) => {
       .send({ message: "Error removing course from cart" });
   }
 });
+
+// ------------------------------------
 
 app.post("/course/add", async (request, response) => {
   const {
@@ -479,7 +479,37 @@ app.delete("/api/delete/:id", async (request, response) => {
   }
 });
 
-// inc balance
+// inc balance endpoint
+app.post("/api/balance/:id", async (request, response) => {
+  const {
+    params: { id },
+    body,
+  } = request;
+
+  const { amount } = body;
+
+  try {
+    const client = await pool.connect();
+    const result = await client.query(
+      "UPDATE users SET balance = balance + $1 WHERE id = $2 RETURNING *",
+      [amount, id]
+    );
+    client.release();
+
+    if (result.rows.length > 0) {
+      const updatedUser = result.rows[0];
+      return response.status(200).send({
+        message: "Balance updated successfully",
+        updatedUser,
+      });
+    } else {
+      return response.status(404).send({ message: "User not found" });
+    }
+  } catch (error) {
+    console.error("Error updating balance:", error);
+    return response.status(500).send({ message: "Error updating balance" });
+  }
+});
 
 // admin functions
 
